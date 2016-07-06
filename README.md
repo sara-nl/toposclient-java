@@ -4,7 +4,7 @@ Minimal Java library for using ToPoS.
 
 ## Authors
 
-- Jeroen Schot 
+- Jeroen Schot
 
 ## License
 

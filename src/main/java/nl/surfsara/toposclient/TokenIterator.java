@@ -46,6 +46,7 @@ public class TokenIterator implements Iterator<Token> {
             throw new NoSuchElementException();
         }
         currentToken = nextToken;
+        nextToken = null;
         return currentToken;
     }
 

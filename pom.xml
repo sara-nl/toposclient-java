@@ -4,7 +4,7 @@
   <groupId>nl.surfsara.toposclient</groupId>
   <artifactId>toposclient</artifactId>
   <packaging>jar</packaging>
-  <version>0.1-SNAPSHOT</version>
+  <version>0.1</version>
   <name>topos-client</name>
   <url>http://github.com/sara-nl/toposclient-java</url>
   <properties>
