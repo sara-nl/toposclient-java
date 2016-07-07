@@ -18,7 +18,7 @@ package nl.surfsara.toposclient;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.RedirectLocations;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
@@ -33,9 +33,9 @@ public class TokenUtils {
     public static Token fromHttpResponse(HttpResponse response, HttpContext context) {
         try {
             URI idUrl;
-            RedirectLocations locations = (RedirectLocations) context.getAttribute(HttpClientContext.REDIRECT_LOCATIONS);
+            RedirectLocations locations = (RedirectLocations) context.getAttribute(DefaultRedirectStrategy.REDIRECT_LOCATIONS);
             if (locations != null) {
-                idUrl = locations.get(locations.size() - 1);
+                idUrl = locations.getAll().get(locations.getAll().size() - 1);
             } else {
                 return null;
             }

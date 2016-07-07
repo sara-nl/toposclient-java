@@ -16,11 +16,11 @@
 
 package nl.surfsara.toposclient;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 
 import java.net.URI;
@@ -35,12 +35,12 @@ class LockRefresher extends TimerTask {
 
     private int lockTime;
     private Map<URI, URI> locks;
-    private CloseableHttpClient httpClient;
+    private HttpClient httpClient;
 
     public LockRefresher(int lockTime) {
         this.lockTime = lockTime;
         this.locks = new ConcurrentHashMap<>();
-        this.httpClient = HttpClients.createDefault();
+        this.httpClient = new DefaultHttpClient();
     }
 
     public void addLock(Token token) {
@@ -57,9 +57,8 @@ class LockRefresher extends TimerTask {
                 .build();
         System.out.println(uri);
         HttpGet request = new HttpGet(uri);
-        try (CloseableHttpResponse response = httpClient.execute(request)) {
-            EntityUtils.consume(response.getEntity());
-        }
+        HttpResponse response = httpClient.execute(request);
+        EntityUtils.consume(response.getEntity());
     }
 
     @Override

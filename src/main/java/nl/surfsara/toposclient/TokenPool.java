@@ -17,15 +17,15 @@
 package nl.surfsara.toposclient;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
@@ -46,7 +46,7 @@ public class TokenPool implements Iterable<Token> {
     private static int DEFAULT_LOCK_TIME = 300;
     private String poolName;
     private String serverUrl;
-    private CloseableHttpClient httpClient;
+    private HttpClient httpClient;
     private int lockTime;
     private LockRefresher lockRefresher;
     private Timer timer;
@@ -67,7 +67,7 @@ public class TokenPool implements Iterable<Token> {
         this.poolName = poolName;
         this.serverUrl = serverUrl;
         this.lockTime = lockTime;
-        this.httpClient = HttpClients.createDefault();
+        this.httpClient = new DefaultHttpClient();
         initTokenPool();
     }
 
@@ -99,7 +99,8 @@ public class TokenPool implements Iterable<Token> {
         }
         HttpContext context = new BasicHttpContext();
         HttpGet request = new HttpGet(uri);
-        try (CloseableHttpResponse response = httpClient.execute(request, context)) {
+        try {
+            HttpResponse response = httpClient.execute(request, context);
             if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
                 Token token = TokenUtils.fromHttpResponse(response, context);
                 if (lockRefresher != null) {
@@ -116,9 +117,10 @@ public class TokenPool implements Iterable<Token> {
     public Token uploadToken(Token token) {
         String url = serverUrl + "/pools/" + poolName + "/nextToken";
         HttpPut request = new HttpPut(url);
-        HttpEntity entity = new StringEntity(token.getContents(), "UTF-8");
-        request.setEntity(entity);
-        try (CloseableHttpResponse response = httpClient.execute(request)) {
+        try {
+            HttpEntity entity = new StringEntity(token.getContents(), "UTF-8");
+            request.setEntity(entity);
+            HttpResponse response = httpClient.execute(request);
             URI idUrl = new URI(response.getFirstHeader("Location").getValue());
             EntityUtils.consume(response.getEntity());
             token.setId(idUrl);
@@ -130,7 +132,8 @@ public class TokenPool implements Iterable<Token> {
 
     public void deleteToken(Token token) {
         HttpDelete request = new HttpDelete(token.getId());
-        try (CloseableHttpResponse response = httpClient.execute(request)) {
+        try {
+            HttpResponse response = httpClient.execute(request);
             EntityUtils.consume(response.getEntity());
         } catch (IOException e) {
             System.err.println("Exception while deleting token");
@@ -143,7 +146,8 @@ public class TokenPool implements Iterable<Token> {
         }
         token.setLock(null);
         HttpDelete request = new HttpDelete(token.getLock());
-        try (CloseableHttpResponse response = httpClient.execute(request)) {
+        try {
+            HttpResponse response = httpClient.execute(request);
             EntityUtils.consume(response.getEntity());
         } catch (IOException e) {
             System.err.println("Exception while unlocking token");
