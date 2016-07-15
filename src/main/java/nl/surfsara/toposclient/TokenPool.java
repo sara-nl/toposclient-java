@@ -131,6 +131,9 @@ public class TokenPool implements Iterable<Token> {
     }
 
     public void deleteToken(Token token) {
+        if (lockRefresher != null) {
+            lockRefresher.removeLock(token);
+        }
         HttpDelete request = new HttpDelete(token.getId());
         try {
             HttpResponse response = httpClient.execute(request);
